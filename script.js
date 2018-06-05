@@ -1,0 +1,90 @@
+class Stopwatch extends React.Component {
+    constructor(props) {
+        super(props);
+        this.running = false;
+        this.reset();
+    }
+
+    reset() {
+        this.state = {
+            times: {
+                minutes: 0,
+                seconds: 0,
+                miliseconds: 0
+            },
+            saved: []
+        };
+    }   
+
+    save() {
+        var timeToSave = this.format(this.state.times);
+        
+        this.setState({
+            saved: [...this.state.saved, timeToSave]
+        });
+    }
+    
+    render() {
+        return (<div>
+                {this.format(this.state.times)}
+                <button onClick={this.start.bind(this)}>Start</button>
+                <button onClick={this.stop.bind(this)}>Stop</button>
+                <button onClick={this.save.bind(this)}>Save</button>
+                <ul>
+                {this.state.saved.map(item => {
+                    return (<li>{item}</li>)
+                })}
+                </ul>
+                </div>);
+    }
+
+    format(times) {
+            return  `${pad0(times.minutes)}:${pad0(times.seconds)}:${pad0(Math.floor(times.miliseconds)) }`;
+    }
+
+    start() {
+        if (!this.running) {
+            this.running = true;
+            this.watch = setInterval(() => this.step(), 10);
+        }
+    }
+
+    step() {
+        if (!this.running) return;
+        this.calculate();
+        this.print();
+    }
+
+    calculate() {
+        var times = Object.assign({}, this.state.times);
+        
+        times.miliseconds += 1;
+        if (times.miliseconds >= 100) {
+            times.seconds += 1;
+            times.miliseconds = 0;
+        }
+        if (times.seconds >= 60) {
+            times.minutes += 1;
+            times.seconds = 0;
+        }
+        
+        this.setState({
+            times: times
+        });
+    }
+
+    stop() {
+        this.running = false;
+        clearInterval(this.watch);
+    }
+}
+
+function pad0(value) {
+    let result = value.toString();
+    if (result.length < 2) {
+        result = '0' + result;
+    }
+    return result;
+}
+
+ReactDOM.render(<Stopwatch />, document.getElementById('app'));
